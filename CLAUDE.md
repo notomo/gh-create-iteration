@@ -4,11 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a GitHub CLI extension called `gh-create-iteration` that appends new iterations to a
-GitHub Projects iteration field. GitHub's GraphQL API has no "append one iteration" mutation;
-`updateProjectV2Field` overwrites the entire iteration configuration. To avoid losing existing
-iterations (and their item associations), the tool reads the current iterations first and
-re-sends them verbatim together with the newly appended iterations.
+This is a GitHub CLI extension called `gh-create-iteration` that adds iterations to a
+GitHub Projects iteration field. Note this is **not an append**: GitHub's GraphQL API has no
+"append one iteration" mutation, so `updateProjectV2Field` overwrites the entire iteration
+configuration. The tool rebuilds the configuration from the current iterations plus the new
+ones and sends the whole thing back.
+
+### Known limitation (do not claim associations are preserved)
+
+`updateProjectV2Field` regenerates a fresh id for every iteration even when title/startDate/duration
+are re-sent verbatim (the `ProjectV2Iteration` input has no `id`). Because an item's iteration value
+references the iteration by id (`ProjectV2ItemFieldIterationValue.iterationId`), **items assigned to
+existing iterations become unassigned after running this tool**, and completed iterations' assignments
+are wiped too. This is a GitHub API limitation; the tool documents it rather than working around it.
+See <https://github.com/orgs/community/discussions/157957>.
 
 ## Key Commands
 
